@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "rebeca",
+    "slug": "rebeca",
+    "scheme": "rebeca",
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
