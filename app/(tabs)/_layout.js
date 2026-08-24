@@ -26,6 +26,30 @@ export default function TabsLayout() {
           headerTitle: "Conteúdo",
         }}
       />
+      <Tabs.Screen
+        name="api"
+        options={{
+          title: "API",
+          headerTitle: "Conteúdo - API",
+        }}/>
+         <Tabs.Screen
+        name="post"
+        options={{
+          title: "POST",
+          headerTitle: "Conteúdo - POST",
+        }}/>
+         <Tabs.Screen
+        name="filme_api"
+        options={{
+          title: "Filmes API",
+          headerTitle: "Conteúdo - Filmes API",
+        }}/>
+         <Tabs.Screen
+        name="filmes_post"
+        options={{
+          title: "filmes POST",
+          headerTitle: "Conteúdo - Filmes POST",
+        }}/>
     </Tabs>
     
   );
