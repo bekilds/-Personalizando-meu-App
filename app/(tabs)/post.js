@@ -7,68 +7,108 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  ActivityIndicator,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
 
-// Em produção, uma chave de API não deveria morar direto no código do
-// app (dá pra extrair de qualquer APK/IPA instalado). Aqui, como é uma
-// API pública de estudo, deixamos direto no código pra simplificar.
-const API_KEY = "cv_i1izR2SmqXtbyEmzO0VSw2dAjIhfvihdBGmnQd4hdC-7VsNOBEzI6CD5SzXetcj_";
+const API_KEY =
+  "cv_i1izR2SmqXtbyEmzO0VSw2dAjIhfvihdBGmnQd4hdC-7VsNOBEzI6CD5SzXetcj_";
 
-// Mesma instância do axios usada na tela de listagem, com o header já
-// configurado — toda chamada feita com "api" já sai autenticada.
 const api = axios.create({
   baseURL: "https://api-ds.codeverse.dev.br",
   headers: {
     "x-api-key": API_KEY,
+    "Content-Type": "application/json",
   },
 });
 
-// ---------- POST: criar um herói novo ----------
-// Payload confirmado pra este tema: title, description e imageUrl
-// (genéricos) + universo, editora e grupo_principal (específicos do
-// tema heróis). category, year, ano_de_estreia, tipo_de_heroi e
-// situacao_do_heroi aparecem na documentação, mas não fazem parte do
-// corpo que a rota de criação realmente aceita.
-export default function HeroisCriarScreen() {
+export default function JogosCriarScreen() {
   const [titulo, setTitulo] = useState("");
-  const [descricao, setDescricao] = useState("");
   const [imagemUrl, setImagemUrl] = useState("");
-  const [universo, setUniverso] = useState("");
-  const [editora, setEditora] = useState("");
-  const [grupoPrincipal, setGrupoPrincipal] = useState("");
+  const [genero, setGenero] = useState("");
+  const [plataforma, setPlataforma] = useState("");
+  const [anoLancamento, setAnoLancamento] = useState("");
+  const [desenvolvedora, setDesenvolvedora] = useState("");
 
   const [enviando, setEnviando] = useState(false);
 
-  async function criarHeroi() {
-    if (!titulo) {
-      Alert.alert("Preencha pelo menos o título.");
+  async function criarJogo() {
+    if (
+      !titulo.trim() ||
+      !genero.trim() ||
+      !plataforma.trim() ||
+      !anoLancamento.trim() ||
+      !desenvolvedora.trim()
+    ) {
+      Alert.alert(
+        "Atenção",
+        "Preencha todos os campos obrigatórios."
+      );
       return;
     }
 
-    setEnviando(true);
-    try {
-      const resposta = await api.post("/api/herois", {
-        title: titulo,
-        description: descricao,
-        imageUrl: imagemUrl,
-        universo,
-        editora,
-        grupo_principal: grupoPrincipal,
-      });
+    const ano = Number(anoLancamento);
 
-      Alert.alert("Herói criado!", resposta.data.title);
-      setTitulo("");
-      setDescricao("");
-      setImagemUrl("");
-      setUniverso("");
-      setEditora("");
-      setGrupoPrincipal("");
-    } catch (e) {
+    if (isNaN(ano)) {
       Alert.alert(
-        "Não deu pra criar o herói",
-        "A API respondeu com erro. Confere se todos os campos estão certinhos e tenta de novo."
+        "Ano inválido",
+        "Digite o ano de lançamento somente com números."
+      );
+      return;
+    }
+
+    try {
+      setEnviando(true);
+
+      const novoJogo = {
+        title: titulo.trim(),
+        imageUrl: imagemUrl.trim() || null,
+        genero: genero.trim(),
+        plataforma: plataforma.trim(),
+        ano_lancamento: ano,
+        desenvolvedora: desenvolvedora.trim(),
+      };
+
+      console.log("ENVIANDO PARA A API:");
+      console.log(novoJogo);
+
+      const resposta = await api.post(
+        "/api/jogos",
+        novoJogo
+      );
+
+      console.log("RESPOSTA DA API:");
+      console.log(resposta.data);
+
+      Alert.alert(
+        "Jogo criado! 🎮",
+        `${resposta.data.title} foi cadastrado com sucesso!`
+      );
+
+      setTitulo("");
+      setImagemUrl("");
+      setGenero("");
+      setPlataforma("");
+      setAnoLancamento("");
+      setDesenvolvedora("");
+
+    } catch (error) {
+      console.log(
+        "ERRO AO CRIAR JOGO:",
+        error.response?.status
+      );
+
+      console.log(
+        "DETALHES:",
+        error.response?.data || error.message
+      );
+
+      Alert.alert(
+        "Erro ao criar jogo",
+        error.response?.data?.message ||
+          "A API recusou o cadastro. Confira os campos e tente novamente."
       );
     } finally {
       setEnviando(false);
@@ -77,99 +117,283 @@ export default function HeroisCriarScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.conteudo}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.conteudo}
+        keyboardShouldPersistTaps="handled"
+      >
+
         <View style={styles.header}>
-          <Text style={styles.tituloPagina}>Criar herói</Text>
-          <Text style={styles.subtitulo}>POST /api/herois</Text>
+          <Text style={styles.tituloPagina}>
+            🎮 Criar jogo
+          </Text>
+
+          <Text style={styles.subtitulo}>
+            Cadastre um novo jogo
+          </Text>
         </View>
 
-        <Text style={styles.rotulo}>Título</Text>
-        <TextInput
-          style={styles.campo}
-          value={titulo}
-          onChangeText={setTitulo}
-          placeholder="Ex: Batman"
-        />
+        <View style={styles.formulario}>
 
-        <Text style={styles.rotulo}>Descrição</Text>
-        <TextInput
-          style={styles.campo}
-          value={descricao}
-          onChangeText={setDescricao}
-          placeholder="Ex: Herói vigilante de Gotham City."
-        />
+          <Text style={styles.tituloFormulario}>
+            ➕ Novo jogo
+          </Text>
 
-        <Text style={styles.rotulo}>URL da imagem</Text>
-        <TextInput
-          style={styles.campo}
-          value={imagemUrl}
-          onChangeText={setImagemUrl}
-          placeholder="Ex: https://exemplo.com/batman.jpg"
-        />
+          
+          <Text style={styles.label}>
+            Título *
+          </Text>
 
-        <Text style={styles.secao}>Campos específicos do tema heróis</Text>
+          <TextInput
+            style={styles.input}
+            value={titulo}
+            onChangeText={setTitulo}
+            placeholder="Ex: Minecraft"
+            placeholderTextColor="#94a3b8"
+          />
 
-        <Text style={styles.rotulo}>Universo</Text>
-        <TextInput
-          style={styles.campo}
-          value={universo}
-          onChangeText={setUniverso}
-          placeholder="Ex: DC"
-        />
+          <Text style={styles.label}>
+            URL da imagem
+          </Text>
 
-        <Text style={styles.rotulo}>Editora</Text>
-        <TextInput
-          style={styles.campo}
-          value={editora}
-          onChangeText={setEditora}
-          placeholder="Ex: DC Comics"
-        />
+          <TextInput
+            style={styles.input}
+            value={imagemUrl}
+            onChangeText={setImagemUrl}
+            placeholder="Cole o link da imagem"
+            placeholderTextColor="#94a3b8"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
 
-        <Text style={styles.rotulo}>Grupo principal</Text>
-        <TextInput
-          style={styles.campo}
-          value={grupoPrincipal}
-          onChangeText={setGrupoPrincipal}
-          placeholder="Ex: Batfamily"
-        />
+          {imagemUrl.trim() !== "" && (
+            <View style={styles.previewContainer}>
 
-        <Pressable style={styles.botao} onPress={criarHeroi} disabled={enviando}>
-          <Text style={styles.botaoTexto}>{enviando ? "Enviando..." : "Criar herói"}</Text>
-        </Pressable>
+              <Text style={styles.previewTitulo}>
+                Prévia da imagem
+              </Text>
+
+              <Image
+                source={{
+                  uri: imagemUrl.trim(),
+                }}
+                style={styles.previewImagem}
+                resizeMode="cover"
+                onError={() =>
+                  console.log(
+                    "Erro ao carregar imagem"
+                  )
+                }
+              />
+
+            </View>
+          )}
+
+  
+          <Text style={styles.secao}>
+            🎮 Informações do jogo
+          </Text>
+
+          <Text style={styles.label}>
+            Gênero *
+          </Text>
+
+          <TextInput
+            style={styles.input}
+            value={genero}
+            onChangeText={setGenero}
+            placeholder="Ex: Sandbox"
+            placeholderTextColor="#94a3b8"
+          />
+          <Text style={styles.label}>
+            Plataforma *
+          </Text>
+
+          <TextInput
+            style={styles.input}
+            value={plataforma}
+            onChangeText={setPlataforma}
+            placeholder="Ex: PlayStation"
+            placeholderTextColor="#94a3b8"
+          />
+          <Text style={styles.label}>
+            Ano de lançamento *
+          </Text>
+
+          <TextInput
+            style={styles.input}
+            value={anoLancamento}
+            onChangeText={setAnoLancamento}
+            placeholder="Ex: 2011"
+            placeholderTextColor="#94a3b8"
+            keyboardType="numeric"
+          />
+          <Text style={styles.label}>
+            Desenvolvedora *
+          </Text>
+
+          <TextInput
+            style={styles.input}
+            value={desenvolvedora}
+            onChangeText={setDesenvolvedora}
+            placeholder="Ex: Mojang"
+            placeholderTextColor="#94a3b8"
+          />
+          <Pressable
+            style={[
+              styles.botao,
+              enviando && styles.botaoDesativado,
+            ]}
+            onPress={criarJogo}
+            disabled={enviando}
+          >
+            {enviando ? (
+              <>
+                <ActivityIndicator
+                  size="small"
+                  color="#ffffff"
+                />
+
+                <Text style={styles.botaoTexto}>
+                  Enviando...
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.botaoTexto}>
+                ➕ Criar jogo
+              </Text>
+            )}
+          </Pressable>
+
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#f8fbff" },
-  conteudo: { padding: 24, paddingBottom: 48 },
-  header: { marginBottom: 16 },
-  tituloPagina: { fontSize: 24, fontWeight: "800", color: "#102542" },
-  subtitulo: { fontSize: 14, color: "#5f6b7a", marginTop: 2 },
-  secao: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#102542",
-    marginTop: 8,
-    marginBottom: 8,
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#f8fbff",
   },
 
-  rotulo: { fontSize: 13, fontWeight: "600", color: "#334155", marginBottom: 4 },
-  campo: {
+  scroll: {
+    flex: 1,
+  },
+
+  conteudo: {
+    padding: 24,
+    paddingBottom: 50,
+  },
+
+  header: {
+    marginBottom: 18,
+  },
+
+  tituloPagina: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#102542",
+  },
+
+  subtitulo: {
+    fontSize: 14,
+    color: "#64748b",
+    marginTop: 4,
+  },
+
+  formulario: {
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    padding: 18,
+    marginBottom: 25,
+
+    elevation: 3,
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+  },
+
+  tituloFormulario: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: "#102542",
+    marginBottom: 15,
+  },
+
+  label: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#334155",
+    marginBottom: 6,
+    marginTop: 10,
+  },
+
+  input: {
+    height: 46,
     borderWidth: 1,
     borderColor: "#cbd5e1",
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 12,
-    backgroundColor: "white",
+    fontSize: 14,
+    color: "#102542",
+    backgroundColor: "#f8fafc",
   },
+
+  secao: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#1565c0",
+    marginTop: 20,
+    marginBottom: 5,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e2e8f0",
+  },
+
+  previewContainer: {
+    marginTop: 15,
+  },
+
+  previewTitulo: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#334155",
+    marginBottom: 8,
+  },
+
+  previewImagem: {
+    width: "100%",
+    height: 200,
+    borderRadius: 10,
+    backgroundColor: "#e2e8f0",
+  },
+
   botao: {
     backgroundColor: "#1565c0",
-    paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: 8,
+    paddingVertical: 13,
     alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 20,
   },
-  botaoTexto: { color: "white", fontWeight: "700" },
+
+  botaoDesativado: {
+    opacity: 0.6,
+  },
+
+  botaoTexto: {
+    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: "800",
+  },
 });
