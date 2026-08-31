@@ -19,6 +19,7 @@ export default function TabsLayout() {
           headerTitle: "Projeto Base",
         }}
       />
+
       <Tabs.Screen
         name="aulas"
         options={{
@@ -26,31 +27,54 @@ export default function TabsLayout() {
           headerTitle: "Conteúdo",
         }}
       />
+
       <Tabs.Screen
         name="api"
         options={{
           title: "API",
           headerTitle: "Conteúdo - API",
-        }}/>
-         <Tabs.Screen
+        }}
+      />
+
+      <Tabs.Screen
         name="post"
         options={{
           title: "POST",
           headerTitle: "Conteúdo - POST",
-        }}/>
-         <Tabs.Screen
-        name="filme_api"
+        }}
+      />
+
+      <Tabs.Screen
+        name="sobre"
         options={{
-          title: "Filmes API",
-          headerTitle: "Conteúdo - Filmes API",
-        }}/>
-         <Tabs.Screen
-        name="filmes_post"
+          title: "Sobre",
+          headerTitle: "Sobre",
+        }}
+      />
+
+      <Tabs.Screen
+        name="exemplo"
         options={{
-          title: "filmes POST",
-          headerTitle: "Conteúdo - Filmes POST",
-        }}/>
+          title: "Exemplo",
+          headerTitle: "Exemplo",
+        }}
+      />
+
+      <Tabs.Screen
+        name="interface"
+        options={{
+          title: "Interface",
+          headerTitle: "Interface",
+        }}
+      />
+
+      <Tabs.Screen
+        name="delete"
+        options={{
+          title: "delete",
+          headerTitle: "delete",
+        }}
+      />
     </Tabs>
-    
   );
 }
